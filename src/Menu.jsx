@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import Todo from './Todo'
 
 import iconMoon from './images/icon-moon.svg'
@@ -7,22 +7,39 @@ import iconPlus from './images/icon-plus.svg'
 
 function Menu(props) {
     const [inputText, setInputText] = useState("")
-    const [todoArray, setTodoArray] = useState([])
-
+    const [todoArray, setTodoArray] = useState([{text: "0", isToggled: false, id: 0}, {text: "1", isToggled: false, id: 1}, {text: "2", isToggled: true, id: 2}, {text: "3", isToggled: true, id: 3}, {text: "4", isToggled: false, id: 4}])
+    const [displayedArray, setDisplayedArray] = useState("All")
+    let todoElements
+    console.log(todoArray)
     function handleChange(event){
         setInputText(event.target.value)
     }
     function handleSubmit(){
         if(inputText.trim() !== ""){
-            setTodoArray(prevState => [...prevState, {text: inputText, isToggled: false, id: prevState.length}])
+            setTodoArray(prevState => [{text: inputText, isToggled: false, id: prevState.length}, ...prevState])
             setInputText("")
         }
     }
     function manageToggle(id){
         setTodoArray(prevArray => prevArray.map(item => item.id === id ? {...item, isToggled: !item.isToggled} : item))
     }
-    console.log(todoArray)
-    const todoElements = todoArray.map(todo => <Todo key={todo.id} id={todo.id} isDarkMode={props.isDarkMode} text={todo.text} isToggled={todo.isToggled} manageToggle={manageToggle}/>)
+    function clearCompleted(){
+        setTodoArray(prevArray => prevArray.filter(todo => todo.isToggled === false))
+    }
+    function deleteItem(id){
+        setTodoArray(prevArray => prevArray.filter(todo => todo.id !== id))
+    }
+    
+    if(displayedArray === "All"){
+        todoElements = todoArray.map(todo => <Todo key={todo.id} id={todo.id} isDarkMode={props.isDarkMode} text={todo.text} isToggled={todo.isToggled} manageToggle={manageToggle} deleteItem={deleteItem}/>)
+    }
+    else if(displayedArray === "Active"){
+        todoElements = todoArray.filter(todo => todo.isToggled === false).map(todo => <Todo key={todo.id} id={todo.id} isDarkMode={props.isDarkMode} text={todo.text} isToggled={todo.isToggled} manageToggle={manageToggle} deleteItem={deleteItem}/>)
+    }
+    else if(displayedArray === "Completed"){
+        todoElements = todoArray.filter(todo => todo.isToggled === true).map(todo => <Todo key={todo.id} id={todo.id} isDarkMode={props.isDarkMode} text={todo.text} isToggled={todo.isToggled} manageToggle={manageToggle} deleteItem={deleteItem}/>)
+    }
+    
 
     return (
         <div className='absolute z-40 top-16 left-1/2 transform -translate-x-1/2 w-full px-6 sm:w-[80%] lg:w-[50%]'>
@@ -45,7 +62,7 @@ function Menu(props) {
                             placeholder='Create a new todo...'
                         />
                     </div>
-                    <button className={`flex items-center m-0 h-8 w-8 rounded-full border border-gray-500 justify-center text-gray-500 focus:outline-none`}
+                    <button className={`flex items-center h-8 w-8 rounded-full border border-gray-500 justify-center focus:outline-none`}
                             onClick={handleSubmit}
                     >
                         <img src={iconPlus} alt="checkIcon"/>
@@ -60,21 +77,21 @@ function Menu(props) {
                         {todoElements}
                     </div>
                     <div className='flex self-end justify-between w-full p-4 border-t-[1px] text-gray-500 font-semibold border-gray-500'>
-                        <h4>{todoArray.length} items </h4>
+                        <h4>{todoArray.filter(todo => todo.isToggled === false).length} items left</h4>
                         <div className='hidden sm:flex'>
-                            <button className='mx-1'>All</button>
-                            <button className='mx-1'>Active</button>
-                            <button className='mx-1'>Completed</button>
+                            <button className={`mx-2 ${displayedArray == "All" ? "text-[#4E7BE6]" : "text-gray-500"}`} onClick={() => setDisplayedArray("All")}>All</button>
+                            <button className={`mx-2 ${displayedArray == "Active" ? "text-[#4E7BE6]" : "text-gray-500"}`} onClick={() => setDisplayedArray("Active")}>Active</button>
+                            <button className={`mx-2 ${displayedArray == "Completed" ? "text-[#4E7BE6]" : "text-gray-500"}`} onClick={() => setDisplayedArray("Completed")}>Completed</button>
                         </div>
-                        <button>Clear completed</button>
+                        <button className='hover:text-[#4E7BE6]' onClick={clearCompleted}>Clear completed</button>
                     </div>
                 </div>
 
-                <div className={`${props.isDarkMode ? "bg-[#293241]" : "bg-white shadow-2xl" } flex rounded-lg w-full items-center justify-center font-bold text-gray-500 py-3 sm:hidden`}>
+                <div className={`${props.isDarkMode ? "bg-[#293241]" : "bg-white shadow-2xl" } flex rounded-lg w-full items-center justify-center font-bold py-3 sm:hidden`}>
                     <div>
-                        <button className='mx-2'>All</button>
-                        <button className='mx-2'>Active</button>
-                        <button className='mx-2'>Completed</button>
+                        <button className={`mx-2 ${displayedArray == "All" ? "text-[#4E7BE6]" : "text-gray-500"}`} onClick={() => setDisplayedArray("All")}>All</button>
+                        <button className={`mx-2 ${displayedArray == "Active" ? "text-[#4E7BE6]" : "text-gray-500"}`} onClick={() => setDisplayedArray("Active")}>Active</button>
+                        <button className={`mx-2 ${displayedArray == "Completed" ? "text-[#4E7BE6]" : "text-gray-500"}`} onClick={() => setDisplayedArray("Completed")}>Completed</button>
                     </div>
                 </div>
                 </>
