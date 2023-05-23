@@ -7,7 +7,7 @@ import iconPlus from './images/icon-plus.svg'
 
 function Menu(props) {
     const [inputText, setInputText] = useState("")
-    const [todoArray, setTodoArray] = useState([{text: "0", isToggled: false, id: 0}, {text: "1", isToggled: false, id: 1}, {text: "2", isToggled: true, id: 2}, {text: "3", isToggled: true, id: 3}, {text: "4", isToggled: false, id: 4}])
+    const [todoArray, setTodoArray] = useState([])
     const [displayedArray, setDisplayedArray] = useState("All")
     let todoElements
     console.log(todoArray)
