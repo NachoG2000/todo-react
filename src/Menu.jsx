@@ -1,5 +1,6 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import Todo from './Todo'
+import { nanoid } from 'nanoid';
 
 import iconMoon from './images/icon-moon.svg'
 import iconSun from './images/icon-sun.svg'
@@ -7,19 +8,29 @@ import iconPlus from './images/icon-plus.svg'
 
 function Menu(props) {
     const [inputText, setInputText] = useState("")
-    const [todoArray, setTodoArray] = useState([])
+    const [todoArray, setTodoArray] = useState(
+        () => JSON.parse(localStorage.getItem("todoArray")) || []
+    )
     const [displayedArray, setDisplayedArray] = useState("All")
+    const inputRef = useRef(null)
     let todoElements
-    console.log(todoArray)
+
     function handleChange(event){
         setInputText(event.target.value)
     }
     function handleSubmit(){
         if(inputText.trim() !== ""){
-            setTodoArray(prevState => [{text: inputText, isToggled: false, id: prevState.length}, ...prevState])
+            setTodoArray(prevState => [{text: inputText, isToggled: false, id: nanoid()}, ...prevState])
             setInputText("")
+            inputRef.current.focus()
+        }
+    }    
+    function handleKeyDown(event){
+        if (event.keyCode === 13) {
+            handleSubmit()
         }
     }
+
     function manageToggle(id){
         setTodoArray(prevArray => prevArray.map(item => item.id === id ? {...item, isToggled: !item.isToggled} : item))
     }
@@ -40,7 +51,10 @@ function Menu(props) {
         todoElements = todoArray.filter(todo => todo.isToggled === true).map(todo => <Todo key={todo.id} id={todo.id} isDarkMode={props.isDarkMode} text={todo.text} isToggled={todo.isToggled} manageToggle={manageToggle} deleteItem={deleteItem}/>)
     }
     
-
+    useEffect(() => {
+        localStorage.setItem("todoArray", JSON.stringify(todoArray))
+    }, [todoArray])
+    
     return (
         <div className='absolute z-40 top-16 left-1/2 transform -translate-x-1/2 w-full px-6 sm:w-[80%] lg:w-[50%]'>
             <div className='flex flex-col'>
@@ -60,6 +74,8 @@ function Menu(props) {
                             value={inputText}
                             name="inputText"
                             placeholder='Create a new todo...'
+                            onKeyDown={handleKeyDown}
+                            ref={inputRef}
                         />
                     </div>
                     <button className={`flex items-center h-8 w-8 rounded-full border border-gray-500 justify-center focus:outline-none`}
